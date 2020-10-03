@@ -1,0 +1,7 @@
+{
+  "name": "Kato",
+  "integrations": {
+    "capacitor": {}
+  },
+  "type": "angular"
+}
