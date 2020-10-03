@@ -1,0 +1,12 @@
+<ion-card>
+  <ion-card-header>
+    <ion-card-subtitle>Weather</ion-card-subtitle>
+  </ion-card-header>
+
+  <ion-item *ngFor="let day of dailyWeather">
+    <ion-icon name="{{ day.iconName }}" slot="start"></ion-icon>
+    <ion-label>{{ day.temp }} &deg;F</ion-label>
+    <ion-label>{{ day.weekday }}</ion-label>
+    <ion-label>{{ day.name }}</ion-label>
+  </ion-item>
+</ion-card>
