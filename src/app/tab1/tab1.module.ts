@@ -6,6 +6,7 @@ import { Tab1Page } from './tab1.page';
 import { WeatherComponentModule } from '../weather/weather.module';
 
 import { Tab1PageRoutingModule } from './tab1-routing.module';
+import { CalendarComponentModule } from '../calendar/calendar.module';
 
 @NgModule({
   imports: [
@@ -13,6 +14,7 @@ import { Tab1PageRoutingModule } from './tab1-routing.module';
     CommonModule,
     FormsModule,
     WeatherComponentModule,
+    CalendarComponentModule,
     Tab1PageRoutingModule
   ],
   declarations: [Tab1Page]
