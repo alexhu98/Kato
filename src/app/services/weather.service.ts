@@ -1,18 +1,18 @@
-import { APP_ID, Injectable } from '@angular/core';
+import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
+
+const OPEN_WEATHER_URL = 'http://api.openweathermap.org/data/2.5/onecall?lat=34.28&lon=-118.88&exclude=minutely,hourly&units=imperial&appid=e6b1a8915b1d79330d9c272f1b2394eb';
 
 @Injectable({
   providedIn: 'root'
 })
 export class WeatherService {
 
-  private OPEN_WEATHER_URL = 'http://api.openweathermap.org/data/2.5/onecall?lat=34.28&lon=-118.88&exclude=minutely,hourly&units=imperial&appid=e6b1a8915b1d79330d9c272f1b2394eb';
-
   constructor(private http: HttpClient) {}
 
   getCurrentWeather(): Observable<any> {
-    return this.http.get(this.OPEN_WEATHER_URL);
+    return this.http.get(OPEN_WEATHER_URL);
   }
 }
 
