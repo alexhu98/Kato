@@ -1,5 +1,5 @@
 {
-  "appId": "io.ionic.starter",
+  "appId": "com.prettygoodcomputing.kato",
   "appName": "Kato",
   "bundledWebRuntime": false,
   "npmClient": "npm",

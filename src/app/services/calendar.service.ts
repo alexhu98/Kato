@@ -1,7 +1,8 @@
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
-import { Observable } from 'rxjs';
-import { map } from 'rxjs/operators';
+import { HttpClient, HttpErrorResponse } from '@angular/common/http';
+import { Observable, throwError } from 'rxjs';
+import { catchError, map } from 'rxjs/operators';
+
 import { format, parseISO } from 'date-fns'
 
 // const CLIENT_ID = '872194152518-m9dmuf0i9heef3au1ld811shsn9bp0k8.apps.googleusercontent.com';
@@ -38,16 +39,22 @@ export class CalendarService {
 
   constructor(private http: HttpClient) {}
 
+  errorHandler(error: HttpErrorResponse) {
+    return throwError(error.message || 'Server error');
+  }
+
   getEvents(): Observable<any> {
-    return this.http.get(CALENDAR_URL).pipe(
-      map((events: any) => {
-        return events.map((event: any) => ({
-          ...event,
-          iconName: getIconName(event.summary),
-          day: getDayName(event.start),
-          time: getTime(event.start),
-        }))
-      })
-    );
+    return this.http.get(CALENDAR_URL)
+      .pipe(
+        map((events: any) => {
+          return events.map((event: any) => ({
+            ...event,
+            iconName: getIconName(event.summary),
+            day: getDayName(event.start),
+            time: getTime(event.start),
+          }))
+        }),
+        catchError(this.errorHandler)
+      );
   }
 }

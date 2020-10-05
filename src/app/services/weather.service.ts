@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
-import { Observable } from 'rxjs';
+import { HttpClient, HttpErrorResponse } from '@angular/common/http';
+import { Observable, throwError } from 'rxjs';
+import { catchError } from 'rxjs/operators';
 
 const OPEN_WEATHER_URL = 'http://api.openweathermap.org/data/2.5/onecall?lat=34.28&lon=-118.88&exclude=minutely,hourly&units=imperial&appid=e6b1a8915b1d79330d9c272f1b2394eb';
 
@@ -11,8 +12,15 @@ export class WeatherService {
 
   constructor(private http: HttpClient) {}
 
+  errorHandler(error: HttpErrorResponse) {
+    return throwError(error.message || 'Server error');
+  }
+
   getCurrentWeather(): Observable<any> {
-    return this.http.get(OPEN_WEATHER_URL);
+    return this.http.get(OPEN_WEATHER_URL)
+      .pipe(
+        catchError(this.errorHandler)
+      )
   }
 }
 

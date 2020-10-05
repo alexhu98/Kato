@@ -1,4 +1,4 @@
-package io.ionic.starter;
+package com.prettygoodcomputing.kato;
 
 import android.os.Bundle;
 

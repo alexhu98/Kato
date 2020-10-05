@@ -1,4 +1,5 @@
 import { Component, OnInit } from '@angular/core';
+import { ToastController } from '@ionic/angular';
 import { CalendarService } from '../services/calendar.service';
 
 
@@ -9,14 +10,24 @@ import { CalendarService } from '../services/calendar.service';
 })
 export class CalendarComponent implements OnInit {
 
-  constructor(private calendarService: CalendarService) { }
+  constructor(private calendarService: CalendarService, private toastController: ToastController) {}
 
   public events = [];
 
   ngOnInit() {
-    this.calendarService.getEvents().subscribe(data => {
-      console.log(`CalendarService -> ngOnInit -> data`, data);
-      this.events = data;
-    });
+    this.calendarService.getEvents().subscribe(
+      (data) => {
+        console.log(`CalendarService -> ngOnInit -> data`, data);
+        this.events = data;
+      },
+      async (error) => {
+        console.log(`CalendarComponent -> ngOnInit -> error`, error)
+        const toast = await this.toastController.create({
+          message: error,
+          duration: 3000,
+        });
+        toast.present();
+      }
+    );
   }
 }

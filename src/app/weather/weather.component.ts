@@ -1,4 +1,5 @@
 import { Component, OnInit } from '@angular/core';
+import { ToastController } from '@ionic/angular';
 import { addDays, format, startOfToday } from 'date-fns';
 import { WeatherService } from '../services/weather.service';
 
@@ -13,7 +14,7 @@ export class WeatherComponent implements OnInit {
 
   public dailyWeather = [];
 
-  constructor(private weatherService: WeatherService) {}
+  constructor(private weatherService: WeatherService, private toastController: ToastController) {}
 
   getIconUrl(weather: any): string {
     const iconName = weather?.length ? weather[0].icon : '01d';
@@ -29,26 +30,35 @@ export class WeatherComponent implements OnInit {
   }
 
   ngOnInit() {
-    this.weatherService.getCurrentWeather().subscribe(data => {
-      console.log(`WeatherComponent -> ngOnInit -> data`, data);
-      const { current, daily } = data;
-      if (daily) {
-        this.dailyWeather = daily.map(({ dt, temp, weather }, index) => ({
-          weekday: this.getWeekday(index),
-          day: this.getDayName(index),
-          temp: Math.round(temp.day),
-          high: Math.round(temp.max),
-          low: Math.round(temp.min),
-          iconUrl: this.getIconUrl(weather),
-        })).slice(0, MAX_DAYS);
-      }
-      if (current) {
-        const { temp, weather } = current;
-        if (temp !== undefined && this.dailyWeather.length) {
-          this.dailyWeather[0].temp = Math.round(temp);
-          this.dailyWeather[0].iconUrl = this.getIconUrl(weather);
+    this.weatherService.getCurrentWeather().subscribe(
+      (data) => {
+        console.log(`WeatherComponent -> ngOnInit -> data`, data);
+        const { current, daily } = data;
+        if (daily) {
+          this.dailyWeather = daily.map(({ dt, temp, weather }, index) => ({
+            weekday: this.getWeekday(index),
+            day: this.getDayName(index),
+            temp: Math.round(temp.day),
+            high: Math.round(temp.max),
+            low: Math.round(temp.min),
+            iconUrl: this.getIconUrl(weather),
+          })).slice(0, MAX_DAYS);
         }
+        if (current) {
+          const { temp, weather } = current;
+          if (temp !== undefined && this.dailyWeather.length) {
+            this.dailyWeather[0].temp = Math.round(temp);
+            this.dailyWeather[0].iconUrl = this.getIconUrl(weather);
+          }
+        }
+      },
+      async (error) => {
+        const toast = await this.toastController.create({
+          message: error,
+          duration: 3000,
+        });
+        toast.present();
       }
-    });
+    );
   }
 }
