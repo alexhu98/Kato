@@ -2,8 +2,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { Observable, throwError } from 'rxjs';
 import { catchError, map } from 'rxjs/operators';
-
-import { format, parseISO } from 'date-fns'
+import { format, isToday, parseISO } from 'date-fns'
 
 // const CLIENT_ID = '872194152518-m9dmuf0i9heef3au1ld811shsn9bp0k8.apps.googleusercontent.com';
 // const CLIENT_SECRET = '5mc_f_24had5LNIxT1m-CrZz';
@@ -22,9 +21,9 @@ const getIconName = (summary): string => {
   return iconName;
 }
 
-
 const getDayName = (isoDateTime: string): string => {
-  return format(parseISO(isoDateTime), 'LLL d');
+  const date = parseISO(isoDateTime);
+  return isToday(date) ? 'Today' : format(date, 'LLL d');
 }
 
 const getTime = (isoDateTime: string): string => {

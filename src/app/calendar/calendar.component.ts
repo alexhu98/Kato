@@ -16,10 +16,7 @@ export class CalendarComponent implements OnInit {
 
   ngOnInit() {
     this.calendarService.getEvents().subscribe(
-      (data) => {
-        console.log(`CalendarService -> ngOnInit -> data`, data);
-        this.events = data;
-      },
+      data => this.events = data,
       async (error) => {
         console.log(`CalendarComponent -> ngOnInit -> error`, error)
         const toast = await this.toastController.create({

@@ -31,28 +31,9 @@ export class WeatherComponent implements OnInit {
 
   ngOnInit() {
     this.weatherService.getCurrentWeather().subscribe(
-      (data) => {
-        console.log(`WeatherComponent -> ngOnInit -> data`, data);
-        const { current, daily } = data;
-        if (daily) {
-          this.dailyWeather = daily.map(({ dt, temp, weather }, index) => ({
-            weekday: this.getWeekday(index),
-            day: this.getDayName(index),
-            temp: Math.round(temp.day),
-            high: Math.round(temp.max),
-            low: Math.round(temp.min),
-            iconUrl: this.getIconUrl(weather),
-          })).slice(0, MAX_DAYS);
-        }
-        if (current) {
-          const { temp, weather } = current;
-          if (temp !== undefined && this.dailyWeather.length) {
-            this.dailyWeather[0].temp = Math.round(temp);
-            this.dailyWeather[0].iconUrl = this.getIconUrl(weather);
-          }
-        }
-      },
+      data => this.dailyWeather = data,
       async (error) => {
+        console.log(`WeatherComponent -> ngOnInit -> error`, error)
         const toast = await this.toastController.create({
           message: error,
           duration: 3000,
