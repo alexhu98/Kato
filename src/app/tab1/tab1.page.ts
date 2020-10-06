@@ -1,4 +1,5 @@
 import { Component, OnInit } from '@angular/core';
+import { AuthenticationService } from '../services/authentication.service'
 
 @Component({
   selector: 'app-tab1',
@@ -8,5 +9,21 @@ import { Component, OnInit } from '@angular/core';
 
 export class Tab1Page {
 
-  constructor() {}
+  constructor(private authService: AuthenticationService) {}
+
+  isAuthReady() {
+    return this.authService.isReady()
+  }
+
+  getProfileImage() {
+    return this.authService.getProfileImage()
+  }
+
+  login() {
+    this.authService.googleAuth()
+  }
+
+  logout() {
+    this.authService.signOut()
+  }
 }

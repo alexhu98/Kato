@@ -5,7 +5,7 @@
 
   <ion-item *ngFor="let event of events">
     <!-- <ion-icon name="{{ event.iconName }}" slot="start"></ion-icon> -->
-    <ion-label>{{ event.day }} {{ event.time }}</ion-label>
+    <ion-label>{{ event.day }} {{ event.time }}{{ event.endDay }}</ion-label>
     <ion-label>{{ event.summary }}</ion-label>
   </ion-item>
 </ion-card>

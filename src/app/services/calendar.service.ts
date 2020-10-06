@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { Observable, throwError } from 'rxjs';
 import { catchError, map } from 'rxjs/operators';
-import { format, isToday, parseISO } from 'date-fns'
+import { differenceInDays, format, formatISO, isToday, parseISO, subDays } from 'date-fns'
 
 // const CLIENT_ID = '872194152518-m9dmuf0i9heef3au1ld811shsn9bp0k8.apps.googleusercontent.com';
 // const CLIENT_SECRET = '5mc_f_24had5LNIxT1m-CrZz';
@@ -30,6 +30,31 @@ const getTime = (isoDateTime: string): string => {
   return isoDateTime.includes('T') ? format(parseISO(isoDateTime), 'p').toLocaleLowerCase() : '';
 }
 
+const getEndDay = (start: string, end: string): string => {
+  if (getTime(start)) {
+    return '';
+  }
+  else {
+    const startDate = parseISO(start);
+    const endDate = parseISO(end);
+    const diff = differenceInDays(endDate, startDate);
+    if (diff > 1) {
+      return '- ' + getDayName(formatISO(subDays(endDate, 1)));
+    }
+  }
+  return '';
+}
+
+const mapEvent = (event: any) => {
+  return {
+    ...event,
+    iconName: getIconName(event.summary),
+    day: getDayName(event.start),
+    time: getTime(event.start),
+    endDay: getEndDay(event.start, event.end),
+  }
+}
+
 
 @Injectable({
   providedIn: 'root'
@@ -45,14 +70,7 @@ export class CalendarService {
   getEvents(): Observable<any> {
     return this.http.get(CALENDAR_URL)
       .pipe(
-        map((events: any) => {
-          return events.map((event: any) => ({
-            ...event,
-            iconName: getIconName(event.summary),
-            day: getDayName(event.start),
-            time: getTime(event.start),
-          }))
-        }),
+        map((events: any) => events.map(mapEvent)),
         catchError(this.errorHandler)
       );
   }
