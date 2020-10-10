@@ -1,7 +1,7 @@
 import { Injectable, OnDestroy } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { BehaviorSubject, Observable, Subscriber, throwError } from 'rxjs';
-import { catchError, map, tap } from 'rxjs/operators';
+import { BehaviorSubject, Observable, timer } from 'rxjs';
+import { catchError, distinctUntilChanged, map } from 'rxjs/operators';
 import { differenceInDays, format, formatISO, isToday, parseISO, startOfToday, subDays } from 'date-fns'
 import { handleError } from './error.handler'
 
@@ -10,8 +10,10 @@ import { handleError } from './error.handler'
 // const REFRESH_TOKEN = '1//04jXCPLyX8sDLCgYIARAAGAQSNwF-L9Ir2rAfY_yjqBFNPN4LH4Pa3flJVI2s3MhfaxawIPUiwUPXKGSKlASMhvR8HVadLmzRrFA';
 
 const CALENDAR_URL = 'http://192.168.0.78:8003/api/calendar/events';
-const ONE_HOUR = 60 * 60 * 1000;
-const ONE_MINUTE = 60 * 1000;
+const ONE_SECOND = 1000;
+const TEN_SECOND = 10 * 1000;
+const ONE_MINUTE = 60 * ONE_SECOND;
+const ONE_HOUR = 60 * ONE_MINUTE;
 
 const getIconName = (summary): string => {
   let iconName = '';
@@ -71,26 +73,20 @@ const formatToday = (): string => {
 export class CalendarService implements OnDestroy {
   constructor(private http: HttpClient) {}
 
-  private minuteInterval: any;
   private hourInterval: any;
   private eventsSubject = new BehaviorSubject<any>([]);
 
   ngOnDestroy(): void {
-    if (this.minuteInterval) {
-      clearInterval(this.minuteInterval);
-    }
     if (this.hourInterval) {
       clearInterval(this.hourInterval);
     }
   }
 
   getToday(): Observable<string> {
-    return new Observable(subscriber => {
-      subscriber.next(formatToday());
-      this.minuteInterval = setInterval(() => {
-        subscriber.next(formatToday())
-      }, ONE_MINUTE);
-    });
+    return timer(0, TEN_SECOND).pipe(
+      map(() => formatToday()),
+      distinctUntilChanged(),
+    );
   }
 
   getEvents(): Observable<any> {
