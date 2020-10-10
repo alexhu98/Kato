@@ -1,14 +1,6 @@
 <ion-header [translucent]="true">
   <ion-toolbar>
-    <ion-title>Today</ion-title>
-<!--
-    <ion-buttons slot="end">
-      <ion-button (click)="login()" *ngIf="isAuthReady() && !getProfileImage()">Login</ion-button>
-      <ion-thumbnail (click)="logout()" *ngIf="isAuthReady() && getProfileImage()">
-        <ion-img [src]="getProfileImage()"></ion-img>
-      </ion-thumbnail>
-    </ion-buttons>
--->
+    <ion-title>{{ today }}</ion-title>
   </ion-toolbar>
 </ion-header>
 
@@ -18,6 +10,10 @@
       <ion-title size="large">Today</ion-title>
     </ion-toolbar>
   </ion-header>
+
+  <ion-refresher slot="fixed" (ionRefresh)="doRefresh($event)">
+    <ion-refresher-content></ion-refresher-content>
+  </ion-refresher>
 
   <app-weather name="Weather"></app-weather>
   <app-calendar name="Calendar"></app-calendar>

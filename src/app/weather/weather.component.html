@@ -3,7 +3,7 @@
     <ion-card-subtitle>Weather</ion-card-subtitle>
   </ion-card-header>
 
-  <ion-item *ngFor="let daily of dailyWeather">
+  <ion-item *ngFor="let daily of weatherData">
     <ion-label>{{ daily.day }}</ion-label>
     <ion-label>{{ daily.weekday }}</ion-label>
     <ion-img [src]="daily.iconUrl"></ion-img>

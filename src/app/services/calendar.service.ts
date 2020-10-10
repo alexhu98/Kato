@@ -1,14 +1,17 @@
-import { Injectable } from '@angular/core';
-import { HttpClient, HttpErrorResponse } from '@angular/common/http';
-import { Observable, throwError } from 'rxjs';
-import { catchError, map } from 'rxjs/operators';
-import { differenceInDays, format, formatISO, isToday, parseISO, subDays } from 'date-fns'
+import { Injectable, OnDestroy } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
+import { BehaviorSubject, Observable, Subscriber, throwError } from 'rxjs';
+import { catchError, map, tap } from 'rxjs/operators';
+import { differenceInDays, format, formatISO, isToday, parseISO, startOfToday, subDays } from 'date-fns'
+import { handleError } from './error.handler'
 
 // const CLIENT_ID = '872194152518-m9dmuf0i9heef3au1ld811shsn9bp0k8.apps.googleusercontent.com';
 // const CLIENT_SECRET = '5mc_f_24had5LNIxT1m-CrZz';
 // const REFRESH_TOKEN = '1//04jXCPLyX8sDLCgYIARAAGAQSNwF-L9Ir2rAfY_yjqBFNPN4LH4Pa3flJVI2s3MhfaxawIPUiwUPXKGSKlASMhvR8HVadLmzRrFA';
 
 const CALENDAR_URL = 'http://192.168.0.78:8003/api/calendar/events';
+const ONE_HOUR = 60 * 60 * 1000;
+const ONE_MINUTE = 60 * 1000;
 
 const getIconName = (summary): string => {
   let iconName = '';
@@ -45,33 +48,65 @@ const getEndDay = (start: string, end: string): string => {
   return '';
 }
 
-const mapEvent = (event: any) => {
-  return {
-    ...event,
-    iconName: getIconName(event.summary),
-    day: getDayName(event.start),
-    time: getTime(event.start),
-    endDay: getEndDay(event.start, event.end),
-  }
+const mapEvent = (event: any) => ({
+  ...event,
+  iconName: getIconName(event.summary),
+  day: getDayName(event.start),
+  time: getTime(event.start),
+  endDay: getEndDay(event.start, event.end),
+})
+
+const mapEvents = (events: any) => {
+  return events.map(mapEvent)
 }
 
+const formatToday = (): string => {
+  const date = new Date();
+  return format(date, 'LLL d EEE') + ' ' + format(date, 'p').toLocaleLowerCase();
+}
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
-export class CalendarService {
-
+export class CalendarService implements OnDestroy {
   constructor(private http: HttpClient) {}
 
-  errorHandler(error: HttpErrorResponse) {
-    return throwError(error.message || 'Server error');
+  private minuteInterval: any;
+  private hourInterval: any;
+  private eventsSubject = new BehaviorSubject<any>([]);
+
+  ngOnDestroy(): void {
+    if (this.minuteInterval) {
+      clearInterval(this.minuteInterval);
+    }
+    if (this.hourInterval) {
+      clearInterval(this.hourInterval);
+    }
+  }
+
+  getToday(): Observable<string> {
+    return new Observable(subscriber => {
+      subscriber.next(formatToday());
+      this.minuteInterval = setInterval(() => {
+        subscriber.next(formatToday())
+      }, ONE_MINUTE);
+    });
   }
 
   getEvents(): Observable<any> {
-    return this.http.get(CALENDAR_URL)
-      .pipe(
-        map((events: any) => events.map(mapEvent)),
-        catchError(this.errorHandler)
-      );
+    this.updateEvents();
+    this.hourInterval = setInterval(() => {
+      this.updateEvents()
+    }, ONE_HOUR);
+    return this.eventsSubject;
+  }
+
+  updateEvents() {
+    this.http.get(CALENDAR_URL).pipe(
+      map(mapEvents),
+      catchError(handleError)
+    ).subscribe(
+      data => this.eventsSubject.next(data)
+    );
   }
 }
