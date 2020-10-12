@@ -1,9 +1,11 @@
 import * as R from 'ramda';
 import { Injectable, OnDestroy } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { BehaviorSubject, Observable, timer } from 'rxjs';
+import { BehaviorSubject, Observable, timer, from } from 'rxjs';
 import { environment } from '../../environments/environment';
 import { login } from 'tplink-cloud-api';
+import { exhaustMap } from 'rxjs/operators'
+import { SubSink } from 'subsink'
 
 // https://www.npmjs.com/package/tplink-cloud-api
 // https://www.youtube.com/watch?v=B-nFj2o03i8
@@ -44,26 +46,27 @@ const mapDevice = (device: any, stateMap: any): any => ({
 })
 export class DeviceService implements OnDestroy {
 
-  public devices$ = new BehaviorSubject<any>([]);
+  refresh$ = new BehaviorSubject<any>(null);
+  refreshTimer$ = timer(0, ONE_MINUTE);
 
-  private minuteInterval: any;
+  devices$ = this.refresh$.pipe(
+    exhaustMap(() => from(this.updateDevices())),
+  )
+
+  private subs = new SubSink();
   private tplink: any;
 
   constructor(private http: HttpClient) {
-    this.updateDevices().then();
-    this.minuteInterval = setInterval(() => {
-      this.updateDevices().then();
-    }, ONE_MINUTE);
+    this.subs.add(this.refreshTimer$.subscribe(this.refresh$));
   }
 
   ngOnDestroy(): void {
-    if (this.minuteInterval) {
-      clearInterval(this.minuteInterval);
-    }
+    this.subs.unsubscribe()
   }
 
   async connect() {
     if (!this.tplink) {
+      console.log(`DeviceService -> connect`);
       this.tplink = await login(TPLINK_USER, TPLINK_PASSWORD);
     }
   }
@@ -83,24 +86,17 @@ export class DeviceService implements OnDestroy {
           R.filter((device: any) => R.includes(device.alias, FILTER_DEVICE_NAMES)),
           R.sortBy(R.prop('alias'))
         )(deviceList);
-        this.devices$.next(devices);
+        return devices;
       }
     }
+    return [];
   }
 
   async toggleDevice(alias: string) {
     await this.connect();
     if (this.tplink) {
       await this.tplink.getHS100(alias).toggle();
-      const devices = this.devices$.getValue();
-      const device = R.find(R.propEq('alias', alias), devices) as any;
-      if (device) {
-        // optimistic update on the state icon for quick user feedback
-        toggleState(device);
-        this.devices$.next(devices);
-      }
-      // then perform a refresh to get the actual device state
-      await this.updateDevices();
+      this.refresh$.next(null);
     }
   }
 }
