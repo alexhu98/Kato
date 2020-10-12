@@ -54,23 +54,21 @@ const mapData = (data: any): any[] => {
 })
 export class WeatherService implements OnDestroy {
 
-  constructor(private http: HttpClient) {}
+  weather$ = new BehaviorSubject<any>([]);
 
   private hourInterval: any;
-  private weatherSubject = new BehaviorSubject<any>([]);
+
+  constructor(private http: HttpClient) {
+    this.updateCurrentWeather();
+    this.hourInterval = setInterval(() => {
+      this.updateCurrentWeather()
+    }, ONE_HOUR);
+  }
 
   ngOnDestroy(): void {
     if (this.hourInterval) {
       clearInterval(this.hourInterval);
     }
-  }
-
-  getCurrentWeather(): Observable<any> {
-    this.updateCurrentWeather();
-    this.hourInterval = setInterval(() => {
-      this.updateCurrentWeather()
-    }, ONE_HOUR);
-    return this.weatherSubject;
   }
 
   updateCurrentWeather(): void {
@@ -81,7 +79,7 @@ export class WeatherService implements OnDestroy {
         catchError(handleError)
       )
       .subscribe(
-        data => this.weatherSubject.next(data)
+        data => this.weather$.next(data)
       );
   }
 }

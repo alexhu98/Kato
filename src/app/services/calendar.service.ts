@@ -71,10 +71,17 @@ const formatToday = (): string => {
   providedIn: 'root',
 })
 export class CalendarService implements OnDestroy {
-  constructor(private http: HttpClient) {}
+
+  events$ = new BehaviorSubject<any>([]);
 
   private hourInterval: any;
-  private eventsSubject = new BehaviorSubject<any>([]);
+
+  constructor(private http: HttpClient) {
+    this.updateEvents();
+    this.hourInterval = setInterval(() => {
+      this.updateEvents()
+    }, ONE_HOUR);
+  }
 
   ngOnDestroy(): void {
     if (this.hourInterval) {
@@ -89,20 +96,12 @@ export class CalendarService implements OnDestroy {
     );
   }
 
-  getEvents(): Observable<any> {
-    this.updateEvents();
-    this.hourInterval = setInterval(() => {
-      this.updateEvents()
-    }, ONE_HOUR);
-    return this.eventsSubject;
-  }
-
   updateEvents() {
     this.http.get(CALENDAR_URL).pipe(
       map(mapEvents),
       catchError(handleError)
     ).subscribe(
-      data => this.eventsSubject.next(data)
+      data => this.events$.next(data)
     );
   }
 }

@@ -4,7 +4,7 @@
   </ion-card-header>
 
   <ion-list>
-    <ion-item *ngFor="let event of events">
+    <ion-item *ngFor="let event of (events$ | async)">
       <ion-label>
         <h3>{{ event.day }} {{ event.time }}{{ event.endDay }}</h3>
         <h2>{{ event.summary }}</h2>

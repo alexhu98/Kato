@@ -44,16 +44,17 @@ const mapDevice = (device: any, stateMap: any): any => ({
 })
 export class DeviceService implements OnDestroy {
 
+  public devices$ = new BehaviorSubject<any>([]);
+
+  private minuteInterval: any;
+  private tplink: any;
+
   constructor(private http: HttpClient) {
     this.updateDevices().then();
     this.minuteInterval = setInterval(() => {
       this.updateDevices().then();
     }, ONE_MINUTE);
   }
-
-  public devices$ = new BehaviorSubject<any>([]);
-  private minuteInterval: any;
-  private tplink: any;
 
   ngOnDestroy(): void {
     if (this.minuteInterval) {

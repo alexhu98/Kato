@@ -1,4 +1,5 @@
 import { Component } from '@angular/core';
+import { CalendarService } from '../services/calendar.service'
 
 @Component({
   selector: 'app-tab3',
@@ -7,6 +8,9 @@ import { Component } from '@angular/core';
 })
 export class Tab3Page {
 
-  constructor() {}
+  constructor(
+    private calendarService: CalendarService,
+  ) {}
 
+  today$ = this.calendarService.getToday();
 }
