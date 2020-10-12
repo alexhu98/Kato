@@ -1,17 +1,20 @@
-import { Injectable, NgZone } from '@angular/core';
+import { Injectable, NgZone, OnDestroy } from '@angular/core';
 import { auth } from 'firebase/app';
 // import { User } from "./user";
 import { Router } from '@angular/router';
 import { AngularFireAuth } from '@angular/fire/auth';
 import { AngularFirestore, AngularFirestoreDocument } from '@angular/fire/firestore';
+import { SubSink } from 'subsink'
 
 @Injectable({
   providedIn: 'root'
 })
 
-export class AuthenticationService {
-  ready = false;
-  userData: any;
+export class AuthenticationService implements OnDestroy {
+
+  public ready = false;
+  public userData: any;
+  private subs = new SubSink()
 
   constructor(
     public afStore: AngularFirestore,
@@ -20,8 +23,9 @@ export class AuthenticationService {
     public ngZone: NgZone
   )
   {
-    this.ngFireAuth.authState.subscribe(user => {
-      console.log(`AuthenticationService -> user`, user)
+/*
+    this.subs.add(this.ngFireAuth.authState.subscribe(user => {
+      // console.log(`AuthenticationService -> user`, user)
       this.ready = true;
       this.userData = user;
       if (user) {
@@ -32,7 +36,12 @@ export class AuthenticationService {
         localStorage.setItem('user', null);
         JSON.parse(localStorage.getItem('user'));
       }
-    })
+    }));
+*/
+  }
+
+  ngOnDestroy() {
+    this.subs.unsubscribe()
   }
 
   isReady() {

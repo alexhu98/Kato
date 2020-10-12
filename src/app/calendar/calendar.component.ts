@@ -1,5 +1,6 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
 import { ToastController } from '@ionic/angular';
+import { SubSink } from 'subsink'
 import { CalendarService } from '../services/calendar.service';
 import { showToastOnError } from '../services/error.handler';
 
@@ -8,7 +9,9 @@ import { showToastOnError } from '../services/error.handler';
   templateUrl: './calendar.component.html',
   styleUrls: ['./calendar.component.scss'],
 })
-export class CalendarComponent implements OnInit {
+export class CalendarComponent implements OnInit, OnDestroy {
+
+  private subs = new SubSink();
 
   constructor(
     private calendarService: CalendarService,
@@ -18,9 +21,13 @@ export class CalendarComponent implements OnInit {
   public events = [];
 
   ngOnInit() {
-    this.calendarService.getEvents().subscribe(
+    this.subs.add(this.calendarService.getEvents().subscribe(
       data => this.events = data,
       error => showToastOnError(this.toastController, error),
-    );
+    ));
+  }
+
+  ngOnDestroy() {
+    this.subs.unsubscribe()
   }
 }

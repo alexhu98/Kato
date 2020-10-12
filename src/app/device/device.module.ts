@@ -2,14 +2,15 @@ import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { IonicModule } from '@ionic/angular';
 
-import { WeatherComponent } from './weather.component';
+import { DeviceComponent } from './device.component';
+
 
 @NgModule({
   imports: [
     CommonModule,
-    IonicModule
+    IonicModule,
   ],
-  declarations: [WeatherComponent],
-  exports: [WeatherComponent]
+  declarations: [DeviceComponent],
+  exports: [DeviceComponent]
 })
-export class WeatherModule {}
+export class DeviceModule { }

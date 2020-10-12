@@ -1,0 +1,13 @@
+<ion-card>
+  <ion-card-header>
+    <ion-card-subtitle>Devices</ion-card-subtitle>
+  </ion-card-header>
+
+  <ion-list>
+    <ion-item *ngFor="let device of (devices$ | async)">
+        <ion-icon name="{{ device.icon }}" size="large"></ion-icon>
+      <h5>{{ device.alias }}</h5>
+      <ion-button slot="end" size="large" fill="clear" (click)="toggleDevice(device)"><ion-icon name="{{ device.stateIcon }}"></ion-icon></ion-button>
+    </ion-item>
+  </ion-list>
+</ion-card>

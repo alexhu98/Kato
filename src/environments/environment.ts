@@ -12,7 +12,11 @@ export const environment = {
     storageBucket: 'kato-291418.appspot.com',
     messagingSenderId: '872194152518',
     appId: '1:872194152518:web:cd4711135e4e8605d71247',
-  }
+  },
+  tplinkConfig: {
+    user: 'alexhu98@hotmail.com',
+    password: 'stardust',
+  },
 };
 
 /*

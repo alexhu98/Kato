@@ -8,9 +8,10 @@ import { CalendarComponent } from './calendar.component';
 @NgModule({
   imports: [
     CommonModule,
-    IonicModule
+    IonicModule,
+
   ],
   declarations: [CalendarComponent],
   exports: [CalendarComponent]
 })
-export class CalendarComponentModule {}
+export class CalendarModule {}

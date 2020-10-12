@@ -14,7 +14,6 @@ import { environment } from '../environments/environment';
 
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
-import { WeatherService } from './services/weather.service';
 
 @NgModule({
   declarations: [AppComponent],
@@ -33,7 +32,6 @@ import { WeatherService } from './services/weather.service';
     AngularFirestoreModule,
     StatusBar,
     SplashScreen,
-    WeatherService,
     { provide: RouteReuseStrategy, useClass: IonicRouteStrategy },
   ],
   bootstrap: [AppComponent]

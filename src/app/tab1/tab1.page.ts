@@ -1,5 +1,6 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
 import { AuthenticationService } from '../services/authentication.service'
+import { SubSink } from 'subsink'
 import { CalendarService } from '../services/calendar.service'
 import { WeatherService } from '../services/weather.service'
 
@@ -9,20 +10,25 @@ import { WeatherService } from '../services/weather.service'
   styleUrls: ['tab1.page.scss']
 })
 
-export class Tab1Page implements OnInit {
+export class Tab1Page implements OnInit, OnDestroy {
 
   constructor(
     private authService: AuthenticationService,
     private calendarService: CalendarService,
     private weatherService: WeatherService,
-  ){}
+  ) {}
 
   public today = ''
+  private subs = new SubSink();
 
   ngOnInit() {
-    this.calendarService.getToday().subscribe(
+    this.subs.add(this.calendarService.getToday().subscribe(
       data => this.today = data,
-    );
+    ));
+  }
+
+  ngOnDestroy() {
+    this.subs.unsubscribe()
   }
 
   doRefresh(event) {
