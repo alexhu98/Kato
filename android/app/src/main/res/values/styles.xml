@@ -16,7 +16,10 @@
     </style>
 
 
+<!--    <item name="android:background">@drawable/splash</item>-->
+<!--    <item name="android:background">@drawable/ic_launcher_foreground</item>-->
     <style name="AppTheme.NoActionBarLaunch" parent="AppTheme.NoActionBar">
-        <item name="android:background">@drawable/splash</item>
+        <item name="android:background">#000000</item>
     </style>
 </resources>
+<!--<item name="android:background">@drawable/splash</item>-->
