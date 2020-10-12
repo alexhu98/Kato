@@ -1,9 +1,10 @@
 import { Injectable, OnDestroy } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { BehaviorSubject, Observable, throwError } from 'rxjs';
-import { catchError, map, retry } from 'rxjs/operators';
+import { BehaviorSubject, timer } from 'rxjs';
+import { catchError, exhaustMap, map, retry } from 'rxjs/operators';
 import { addDays, format, startOfToday } from 'date-fns';
 import { handleError } from './error.handler'
+import { SubSink } from 'subsink'
 
 const LAT = '34.28';
 const LON = '-118.88';
@@ -54,32 +55,31 @@ const mapData = (data: any): any[] => {
 })
 export class WeatherService implements OnDestroy {
 
-  weather$ = new BehaviorSubject<any>([]);
+  refresh$ = new BehaviorSubject<any>(null);
+  refreshTimer$ = timer(0, ONE_HOUR);
 
-  private hourInterval: any;
+  updateWeather$ = this.http.get(OPEN_WEATHER_URL)
+    .pipe(
+      retry(3),
+      map(mapData),
+      catchError(handleError)
+    )
+
+  weather$ = this.refresh$.pipe(
+    exhaustMap(() => this.updateWeather$),
+  )
+
+  private subs = new SubSink();
 
   constructor(private http: HttpClient) {
-    this.updateCurrentWeather();
-    this.hourInterval = setInterval(() => {
-      this.updateCurrentWeather()
-    }, ONE_HOUR);
+    this.subs.add(this.refreshTimer$.subscribe(this.refresh$));
   }
 
   ngOnDestroy(): void {
-    if (this.hourInterval) {
-      clearInterval(this.hourInterval);
-    }
+    this.subs.unsubscribe();
   }
 
-  updateCurrentWeather(): void {
-    this.http.get(OPEN_WEATHER_URL)
-      .pipe(
-        retry(3),
-        map(mapData),
-        catchError(handleError)
-      )
-      .subscribe(
-        data => this.weather$.next(data)
-      );
+  refresh(): void {
+    this.refresh$.next(null) ;
   }
 }

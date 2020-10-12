@@ -8,9 +8,9 @@ import { CalendarService } from '../services/calendar.service'
 })
 export class Tab3Page {
 
+  today$ = this.calendarService.today$;
+
   constructor(
     private calendarService: CalendarService,
   ) {}
-
-  today$ = this.calendarService.getToday();
 }

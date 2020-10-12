@@ -11,17 +11,17 @@ import { WeatherService } from '../services/weather.service'
 
 export class Tab1Page {
 
+  today$ = this.calendarService.today$;
+
   constructor(
     private authService: AuthenticationService,
     private calendarService: CalendarService,
     private weatherService: WeatherService,
   ) {}
 
-  today$ = this.calendarService.getToday();
-
   doRefresh(event) {
-    this.calendarService.updateEvents();
-    this.weatherService.updateCurrentWeather();
+    this.calendarService.refresh();
+    this.weatherService.refresh();
     event.target.complete();
   }
 

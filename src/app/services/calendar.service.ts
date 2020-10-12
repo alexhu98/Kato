@@ -1,8 +1,9 @@
 import { Injectable, OnDestroy } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { BehaviorSubject, Observable, timer } from 'rxjs';
-import { catchError, distinctUntilChanged, map } from 'rxjs/operators';
-import { differenceInDays, format, formatISO, isToday, parseISO, startOfToday, subDays } from 'date-fns'
+import { BehaviorSubject, timer } from 'rxjs';
+import { catchError, distinctUntilChanged, exhaustMap, map } from 'rxjs/operators';
+import { differenceInDays, format, formatISO, isToday, parseISO, subDays } from 'date-fns'
+import { SubSink } from 'subsink'
 import { handleError } from './error.handler'
 
 // const CLIENT_ID = '872194152518-m9dmuf0i9heef3au1ld811shsn9bp0k8.apps.googleusercontent.com';
@@ -72,36 +73,41 @@ const formatToday = (): string => {
 })
 export class CalendarService implements OnDestroy {
 
-  events$ = new BehaviorSubject<any>([]);
+  refresh$ = new BehaviorSubject<any>(null);
+  refreshTimer$ = timer(0, ONE_MINUTE);
 
-  private hourInterval: any;
+  updateEvents$ = this.http.get(CALENDAR_URL).pipe(
+    map(mapEvents),
+    catchError(handleError)
+  )
+
+  events$ = this.refresh$.pipe(
+    exhaustMap(() => this.updateEvents$),
+  )
+
+  today$ = timer(0, TEN_SECOND).pipe(
+    map(() => formatToday()),
+    distinctUntilChanged(),
+  );
+
+  private subs = new SubSink();
 
   constructor(private http: HttpClient) {
-    this.updateEvents();
-    this.hourInterval = setInterval(() => {
-      this.updateEvents()
-    }, ONE_HOUR);
+    this.subs.add(this.refreshTimer$.subscribe(this.refresh$));
   }
 
   ngOnDestroy(): void {
-    if (this.hourInterval) {
-      clearInterval(this.hourInterval);
-    }
+    this.subs.unsubscribe();
   }
 
-  getToday(): Observable<string> {
-    return timer(0, TEN_SECOND).pipe(
-      map(() => formatToday()),
-      distinctUntilChanged(),
-    );
-  }
+  // getToday(): Observable<string> {
+  //   return timer(0, TEN_SECOND).pipe(
+  //     map(() => formatToday()),
+  //     distinctUntilChanged(),
+  //   );
+  // }
 
-  updateEvents() {
-    this.http.get(CALENDAR_URL).pipe(
-      map(mapEvents),
-      catchError(handleError)
-    ).subscribe(
-      data => this.events$.next(data)
-    );
+  refresh() {
+    this.refresh$.next(null);
   }
 }
