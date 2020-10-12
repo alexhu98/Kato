@@ -40,7 +40,7 @@ export class AuthenticationService implements OnDestroy {
 */
   }
 
-  ngOnDestroy() {
+  ngOnDestroy(): void {
     this.subs.unsubscribe()
   }
 

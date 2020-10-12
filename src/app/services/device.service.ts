@@ -64,7 +64,11 @@ export class DeviceService implements OnDestroy {
     this.subs.unsubscribe()
   }
 
-  async connect() {
+  refresh(): void {
+    this.refresh$.next(null);
+  }
+
+  async connect()  {
     if (!this.tplink) {
       console.log(`DeviceService -> connect`);
       this.tplink = await login(TPLINK_USER, TPLINK_PASSWORD);
@@ -96,7 +100,7 @@ export class DeviceService implements OnDestroy {
     await this.connect();
     if (this.tplink) {
       await this.tplink.getHS100(alias).toggle();
-      this.refresh$.next(null);
+      this.refresh();
     }
   }
 }

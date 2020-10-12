@@ -100,14 +100,7 @@ export class CalendarService implements OnDestroy {
     this.subs.unsubscribe();
   }
 
-  // getToday(): Observable<string> {
-  //   return timer(0, TEN_SECOND).pipe(
-  //     map(() => formatToday()),
-  //     distinctUntilChanged(),
-  //   );
-  // }
-
-  refresh() {
+  refresh(): void {
     this.refresh$.next(null);
   }
 }
