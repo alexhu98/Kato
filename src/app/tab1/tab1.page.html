@@ -5,10 +5,10 @@
 </ion-header>
 
 <ion-content [fullscreen]="true">
-  <ion-refresher slot="fixed" (ionRefresh)="doRefresh($event)">
+  <ion-refresher slot="fixed" (ionRefresh)="refresh($event)">
     <ion-refresher-content></ion-refresher-content>
   </ion-refresher>
-  <div #content class="content">
+  <div #tabContent class="tab-content">
     <app-weather name="Weather"></app-weather>
     <app-calendar name="Calendar"></app-calendar>
   </div>
