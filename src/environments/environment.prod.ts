@@ -1,3 +1,7 @@
 export const environment = {
-  production: true
+  production: true,
+  tplinkConfig: {
+    user: 'alexhu98@hotmail.com',
+    password: 'stardust',
+  },
 };
