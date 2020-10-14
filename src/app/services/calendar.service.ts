@@ -1,7 +1,7 @@
 import { Injectable, OnDestroy } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { BehaviorSubject, timer } from 'rxjs';
-import { catchError, distinctUntilChanged, exhaustMap, map, share } from 'rxjs/operators';
+import { catchError, distinctUntilChanged, exhaustMap, map } from 'rxjs/operators';
 import { differenceInDays, format, formatISO, isToday, parseISO, subDays } from 'date-fns'
 import { SubSink } from 'subsink'
 import { handleError } from './error.handler'
@@ -88,7 +88,6 @@ export class CalendarService implements OnDestroy {
   today$ = timer(0, TEN_SECOND).pipe(
     map(() => formatToday()),
     distinctUntilChanged(),
-    share(),
   );
 
   private subs = new SubSink();
