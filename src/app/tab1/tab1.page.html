@@ -8,7 +8,8 @@
   <ion-refresher slot="fixed" (ionRefresh)="doRefresh($event)">
     <ion-refresher-content></ion-refresher-content>
   </ion-refresher>
-
-  <app-weather name="Weather"></app-weather>
-  <app-calendar name="Calendar"></app-calendar>
+  <div #content class="content">
+    <app-weather name="Weather"></app-weather>
+    <app-calendar name="Calendar"></app-calendar>
+  </div>
 </ion-content>
