@@ -1,42 +1,41 @@
-import { AfterViewInit, Component, ElementRef, NgZone, ViewChild } from '@angular/core';
+import { Component, NgZone, OnDestroy } from '@angular/core';
 import { Router } from '@angular/router'
 import { CalendarService } from '../services/calendar.service'
-import { GestureController, NavController } from '@ionic/angular'
-import { SwipeableTabComponent } from '../swipeable-tab/swipeable-tab.component'
+import { GestureController, ViewDidEnter, ViewWillLeave } from '@ionic/angular'
+import { SwipeTabPage } from '../swipe-tab/swipe-tab.page'
+import { DeviceService } from '../services/device.service'
 
 @Component({
   selector: 'app-tab2',
   templateUrl: 'tab2.page.html',
   styleUrls: ['tab2.page.scss']
 })
-export class Tab2Page extends SwipeableTabComponent implements AfterViewInit {
-
-  @ViewChild('tabContent') tabContent: ElementRef;
+export class Tab2Page extends SwipeTabPage implements ViewDidEnter, ViewWillLeave {
 
   today$ = this.calendarService.today$;
 
   constructor(
-    private router: Router,
-    private zone: NgZone,
-    private gestureController: GestureController,
-    private calendarService: CalendarService,
+    router: Router,
+    zone: NgZone,
+    gestureController: GestureController,
+    protected calendarService: CalendarService,
+    protected deviceService: DeviceService,
   ) {
-    super();
+    super(router, zone, gestureController, '/tabs/tab1', '/tabs/tab1');
   }
 
-  ngAfterViewInit() {
-    this.initializeSwipeableTab(this.gestureController, this.tabContent);
+  refresh(event) {
+    console.log(`Tab2Page -> refresh -> event`, event)
+    this.calendarService.refresh();
+    this.deviceService.refresh();
+    event.target.complete();
   }
 
-  protected onSwipeLeft(): void {
-    this.zone.run(async () => {
-      await this.router.navigate(['/tabs/tab1']);
-    });
+  ionViewDidEnter() {
+    this.deviceService.startTimer();
   }
 
-  protected onSwipeRight(): void {
-    this.zone.run(async () => {
-      await this.router.navigate(['/tabs/tab1']);
-    });
+  ionViewWillLeave() {
+    this.deviceService.stopTimer();
   }
 }

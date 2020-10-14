@@ -1,7 +1,7 @@
 import * as R from 'ramda';
 import { Injectable, OnDestroy } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { BehaviorSubject, Observable, timer, from } from 'rxjs';
+import { BehaviorSubject, timer, from } from 'rxjs';
 import { environment } from '../../environments/environment';
 import { login } from 'tplink-cloud-api';
 import { exhaustMap } from 'rxjs/operators'
@@ -29,11 +29,6 @@ const getStateIcon = (state: number): string => {
   return state ? 'power-outline' : 'remove-circle-outline';
 }
 
-const toggleState = (device: any): void => {
-  device.state = device.state ? 0 : 1;
-  device.stateIcon = getStateIcon(device.state);
-}
-
 const mapDevice = (device: any, stateMap: any): any => ({
   icon: getIconName(device.alias),
   alias: device.alias,
@@ -57,15 +52,25 @@ export class DeviceService implements OnDestroy {
   private tplink: any;
 
   constructor(private http: HttpClient) {
-    this.subs.add(this.refreshTimer$.subscribe(this.refresh$));
+    this.startTimer();
   }
 
   ngOnDestroy(): void {
-    this.subs.unsubscribe()
+    this.stopTimer()
   }
 
   refresh(): void {
-    this.refresh$.next(null);
+    this.stopTimer();
+    this.startTimer();
+  }
+
+  startTimer() {
+    this.subs.add(this.refreshTimer$.subscribe(this.refresh$));
+  }
+
+  stopTimer() {
+    this.subs.unsubscribe();
+    this.subs = new SubSink();
   }
 
   async connect()  {
