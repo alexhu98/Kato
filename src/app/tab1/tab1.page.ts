@@ -41,11 +41,11 @@ export class Tab1Page extends SwipeTabPage {
     return this.authService.getProfileImage();
   }
 
-  login() {
-    this.authService.googleAuth();
+  async signIn() {
+    await this.authService.signIn();
   }
 
-  logout() {
-    this.authService.signOut();
+  async signOut() {
+    await this.authService.signOut();
   }
 }

@@ -1,6 +1,12 @@
 <ion-header [translucent]="true">
   <ion-toolbar>
     <ion-title>{{ today$ | async }}</ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="signIn()" *ngIf="isAuthReady() && !getProfileImage()">Login</ion-button>
+      <ion-thumbnail (click)="signOut()" *ngIf="isAuthReady() && getProfileImage()">
+        <ion-img [src]="getProfileImage()"></ion-img>
+      </ion-thumbnail>
+    </ion-buttons>
   </ion-toolbar>
 </ion-header>
 

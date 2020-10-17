@@ -17,6 +17,9 @@ export const environment = {
     user: 'alexhu98@hotmail.com',
     password: 'stardust',
   },
+  googlePlusConfig: {
+    webClientId: '872194152518-3uo269q5lraicu050a8rkc38h870mdac.apps.googleusercontent.com',
+  }
 };
 
 /*

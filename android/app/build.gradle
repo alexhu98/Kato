@@ -16,6 +16,20 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
     }
+    signingConfigs {
+        release {
+            storeFile file("main.keystore")
+            storePassword "Android"
+            keyAlias 'kato'
+            keyPassword 'Android'
+        }
+        debug {
+            storeFile file("main.keystore")
+            storePassword "Android"
+            keyAlias 'kato'
+            keyPassword 'Android'
+        }
+    }
 }
 
 repositories {

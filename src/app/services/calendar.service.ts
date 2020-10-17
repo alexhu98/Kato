@@ -29,7 +29,7 @@ const getIconName = (summary): string => {
 
 const getDayName = (isoDateTime: string): string => {
   const date = parseISO(isoDateTime);
-  return isToday(date) ? 'Today' : format(date, 'LLL d');
+  return (isToday(date) ? 'Today' : format(date, 'LLL d')) + format(date, ' EEE');
 }
 
 const getTime = (isoDateTime: string): string => {
