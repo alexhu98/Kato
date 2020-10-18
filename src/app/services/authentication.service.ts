@@ -35,6 +35,10 @@ export class AuthenticationService implements OnDestroy {
     this.subs.unsubscribe();
   }
 
+  isAndroid(): boolean {
+    return isPlatform('android');
+  }
+
   isReady(): boolean {
     return this.ready;
   }
@@ -51,15 +55,13 @@ export class AuthenticationService implements OnDestroy {
   // Sign in with Google
   async signIn() {
     try {
-      const isCapacitorPlatform = isPlatform('capacitor');
-      console.log(`AuthenticationService -> signIn -> isCapacitorPlatform =`, isCapacitorPlatform)
-      if (isCapacitorPlatform) {
+      if (this.isAndroid()) {
         const options = {
           webClientId: WEB_CLIENT_ID,
           offline: false,
         };
 
-        let result;
+        let result: any;
         try {
           console.log(`AuthenticationService -> signIn -> googlePlus.trySilentLogin -> calling`)
           result = await this.googlePlus.trySilentLogin(options)
@@ -94,8 +96,14 @@ export class AuthenticationService implements OnDestroy {
       this.ready = false;
       this.userData = undefined;
       localStorage.removeItem('user')
-      console.log(`AuthenticationService -> signOut -> calling`)
-      await this.angularFireAuth.signOut()
+      console.log(`AuthenticationService -> angularFireAuth.signOut -> calling`)
+      let result = await this.angularFireAuth.signOut();
+      console.log(`AuthenticationService -> angularFireAuth.signOut -> result`, result)
+      if (this.isAndroid()) {
+        console.log(`AuthenticationService -> googlePlus.logout -> calling`)
+        result = await this.googlePlus.logout();
+        console.log(`AuthenticationService -> googlePlus.logout -> result`, result)
+      }
     }
     catch (ex) {
       console.log(`AuthenticationService -> signOut -> ex`, ex)

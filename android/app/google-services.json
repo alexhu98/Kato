@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "872194152518",
+    "firebase_url": "https://kato-291418.firebaseio.com",
+    "project_id": "kato-291418",
+    "storage_bucket": "kato-291418.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:872194152518:android:0f38ba6c345422d2d71247",
+        "android_client_info": {
+          "package_name": "com.prettygoodcomputing.kato"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "872194152518-b5p0sr8sui6rickgtqhab0m3u3a4pfgu.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.prettygoodcomputing.kato",
+            "certificate_hash": "64a1c8a6211236d2d50dade3ef6bd8f182e4a57f"
+          }
+        },
+        {
+          "client_id": "872194152518-3uo269q5lraicu050a8rkc38h870mdac.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCYN_nOqJ2XuWgBuqS6OhGI_nBOFk3gKTs"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "872194152518-3uo269q5lraicu050a8rkc38h870mdac.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
