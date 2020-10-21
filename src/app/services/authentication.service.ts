@@ -47,8 +47,6 @@ export class AuthenticationService implements OnDestroy {
 
   user$ = new BehaviorSubject<UserData>(NOT_READY_USER_DATA);
 
-  private ready = false;
-  private userData: UserData | undefined = undefined;
   private googleAuth: gapi.auth2.GoogleAuth = undefined;
   private googleUser: gapi.auth2.GoogleUser = undefined;
   private googleAuthResponse: gapi.auth2.AuthResponse = undefined;
@@ -64,18 +62,22 @@ export class AuthenticationService implements OnDestroy {
     this.subs.add(this.gapiService.onLoad().subscribe(() => {
       gapi.load('client', async () => {
         await gapi.client.load('calendar', 'v3');
-        console.log(`AuthenticationService -> this.ready`)
         if (!this.isAndroid()) {
           this.subs.add(this.googleAuthService.getAuth().subscribe(auth => {
             this.googleAuth = auth;
-            console.log(`AuthenticationService -> googleAuth =`, this.googleAuth);
             const user = auth.currentUser.get();
             console.log(`AuthenticationService -> user.isSignedIn()`, user.isSignedIn())
             if (user.isSignedIn()) {
               this.googleUser = user;
               console.log(`AuthenticationService -> this.googleUser =`, this.googleUser);
               this.googleAuthResponse = this.googleUser.getAuthResponse();
+              console.log(`AuthenticationService -> this.googleAuthResponse =`, this.googleAuthResponse);
               this.updateUserDataByGoogleAuth(this.googleUser, this.googleAuthResponse);
+            }
+            else {
+              this.ngZone.run(() => {
+                this.user$.next(NOT_SIGNED_IN_USER_DATA);
+              });
             }
           }));
         }
@@ -127,11 +129,11 @@ export class AuthenticationService implements OnDestroy {
       else if (this.googleAuth) {
         try {
           console.log(`AuthenticationService -> googleAuth.signIn -> calling`);
-          const user = await this.googleAuth.signIn();
-          console.log(`AuthenticationService -> googleAuth.signIn -> user`, user)
-          this.googleUser = user;
-          this.googleAuthResponse = user.getAuthResponse();
-          this.updateUserDataByGoogleAuth(user, this.googleAuthResponse);
+          this.googleUser = await this.googleAuth.signIn();
+          this.googleAuthResponse = this.googleUser.getAuthResponse();
+          console.log(`AuthenticationService -> googleAuth.signIn -> this.googleUser =`, this.googleUser);
+          console.log(`AuthenticationService -> googleAuth.signIn -> this.googleAuthResponse =`, this.googleAuthResponse);
+          this.updateUserDataByGoogleAuth(this.googleUser, this.googleAuthResponse);
         }
         catch (ex) {
           console.error(`AuthenticationService -> googleAuth.signIn -> ex =`, ex)
@@ -177,10 +179,10 @@ export class AuthenticationService implements OnDestroy {
 
   async refreshToken() {
     try {
-      if (this.googleAuth && this.googleUser && this.userData) {
-        const autoResponse = await this.googleUser.reloadAuthResponse();
-        console.log(`AuthenticationService -> refreshToken -> this.googleUser.reloadAuthResponse`, autoResponse);
-        this.updateUserDataByRefreshToken(autoResponse);
+      if (this.googleAuth && this.googleUser) {
+        const authResponse = await this.googleUser.reloadAuthResponse();
+        console.log(`AuthenticationService -> refreshToken -> this.googleUser.reloadAuthResponse`, authResponse);
+        this.updateUserDataByRefreshToken(authResponse);
       }
     }
     catch (ex) {

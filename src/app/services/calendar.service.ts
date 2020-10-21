@@ -85,7 +85,7 @@ export class CalendarService implements OnDestroy {
   ) {
     this.subs.add(this.refreshTimer$.subscribe(this.refresh$));
     this.subs.add(this.refresh$.subscribe(() => this.fetchEvents()));
-    this.subs.add(this.authenticationService.user$.subscribe(({ signedIn }) => signedIn && this.refresh()));
+    this.subs.add(this.authenticationService.user$.subscribe(() => this.refresh()));
   }
 
   ngOnDestroy(): void {
@@ -98,7 +98,8 @@ export class CalendarService implements OnDestroy {
 
   fetchEvents() {
     const accessToken = this.authenticationService.getAccessToken();
-    if (gapi && gapi.client && accessToken) {
+    console.log(`CalendarService -> fetchEvents -> accessToken`, accessToken)
+    if (accessToken && gapi && gapi.client) {
       gapi.client.setToken({
         access_token: accessToken,
       });
@@ -135,6 +136,11 @@ export class CalendarService implements OnDestroy {
           }
         });
       }
+    }
+    else {
+      this.ngZone.run(() => {
+        this.events$.next([])
+      });
     }
   }
 }
