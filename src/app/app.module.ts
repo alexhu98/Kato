@@ -16,6 +16,19 @@ import { environment } from '../environments/environment';
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
 
+import { GoogleApiModule, NgGapiClientConfig, NG_GAPI_CONFIG } from 'ng-gapi'
+
+const WEB_CLIENT_ID = environment.googlePlusConfig.webClientId;
+
+const gapiClientConfig: NgGapiClientConfig = {
+  client_id: WEB_CLIENT_ID,
+  discoveryDocs: ['https://discovery.googleapis.com/$discovery/rest'],
+  scope: [
+    'https://www.googleapis.com/auth/calendar',
+    'https://www.googleapis.com/auth/calendar.events',
+  ].join(' ')
+};
+
 @NgModule({
   declarations: [AppComponent],
   entryComponents: [],
@@ -27,7 +40,11 @@ import { AppComponent } from './app.component';
     AngularFireModule.initializeApp(environment.firebaseConfig),
     AngularFireAuthModule,
     AngularFireDatabaseModule,
-    AngularFirestoreModule
+    AngularFirestoreModule,
+    GoogleApiModule.forRoot({
+      provide: NG_GAPI_CONFIG,
+      useValue: gapiClientConfig,
+    }),
   ],
   providers: [
     AngularFirestoreModule,

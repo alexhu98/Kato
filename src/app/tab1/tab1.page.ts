@@ -1,6 +1,7 @@
-import { Component, NgZone } from '@angular/core';
+import { Component, NgZone, OnDestroy } from '@angular/core';
 import { Router } from '@angular/router'
 import { GestureController } from '@ionic/angular'
+import { SubSink } from 'subsink'
 import { AuthenticationService } from '../services/authentication.service'
 import { CalendarService } from '../services/calendar.service'
 import { WeatherService } from '../services/weather.service'
@@ -9,12 +10,14 @@ import { SwipeTabPage } from '../swipe-tab/swipe-tab.page'
 @Component({
   selector: 'app-tab1',
   templateUrl: 'tab1.page.html',
-  styleUrls: ['tab1.page.scss']
+  styleUrls: ['tab1.page.scss'],
 })
 
-export class Tab1Page extends SwipeTabPage {
+export class Tab1Page extends SwipeTabPage implements OnDestroy {
 
+  user$ = this.authService.user$;
   today$ = this.calendarService.today$;
+  private subs = new SubSink()
 
   constructor(
     router: Router,
@@ -27,18 +30,14 @@ export class Tab1Page extends SwipeTabPage {
     super(router, zone, gestureController, '/tabs/tab2', '/tabs/tab2');
   }
 
+  ngOnDestroy(): void {
+    this.subs.unsubscribe();
+  }
+
   refresh(event) {
     this.calendarService.refresh();
     this.weatherService.refresh();
     event.target.complete();
-  }
-
-  isAuthReady() {
-    return this.authService.isReady();
-  }
-
-  getProfileImage() {
-    return this.authService.getProfileImage();
   }
 
   async signIn() {

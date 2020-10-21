@@ -1,4 +1,4 @@
-<ion-card>
+<ion-card *ngIf="(events$ | async).length > 0">
   <ion-card-header>
     <ion-card-subtitle>Calendar</ion-card-subtitle>
   </ion-card-header>
