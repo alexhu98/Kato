@@ -3,6 +3,7 @@ import { Injectable, NgZone, OnDestroy } from '@angular/core';
 import { BehaviorSubject, timer } from 'rxjs';
 import { distinctUntilChanged, map } from 'rxjs/operators';
 import { addWeeks, differenceInDays, format, formatISO, isToday, parseISO, startOfToday, subDays } from 'date-fns'
+import { GoogleApiService } from 'ng-gapi'
 import { SubSink } from 'subsink'
 import { AuthenticationService } from './authentication.service'
 
@@ -68,7 +69,7 @@ const formatToday = (): string => {
 })
 export class CalendarService implements OnDestroy {
 
-  refreshTimer$ = timer(0, ONE_MINUTE);
+  refreshTimer$ = timer(0, ONE_HOUR);
   refresh$ = new BehaviorSubject<any>(null);
   events$ = new BehaviorSubject<any>([]);
 
@@ -78,18 +79,31 @@ export class CalendarService implements OnDestroy {
   );
 
   private subs = new SubSink();
+  private calendarApi: any;
 
   constructor(
     private ngZone: NgZone,
+    private gapiService: GoogleApiService,
     private authenticationService: AuthenticationService,
   ) {
     this.subs.add(this.refreshTimer$.subscribe(this.refresh$));
     this.subs.add(this.refresh$.subscribe(() => this.fetchEvents()));
     this.subs.add(this.authenticationService.user$.subscribe(() => this.refresh()));
+    this.subs.add(this.gapiService.onLoad().subscribe(async () => this.loadGapiClient()));
   }
 
   ngOnDestroy(): void {
     this.subs.unsubscribe();
+  }
+
+  loadGapiClient() {
+    gapi.load('client', async () => {
+      // console.log(`CalendarService -> loadGapiClient -> gapi.client`, gapi.client)
+      await gapi.client.load('calendar', 'v3');
+      this.calendarApi = (gapi.client as any).calendar;
+      // console.log(`CalendarService -> loadGapiClient -> this.calendarApi`, this.calendarApi)
+      this.refresh();
+    });
   }
 
   refresh(): void {
@@ -98,44 +112,38 @@ export class CalendarService implements OnDestroy {
 
   fetchEvents() {
     const accessToken = this.authenticationService.getAccessToken();
-    console.log(`CalendarService -> fetchEvents -> accessToken`, accessToken)
-    if (accessToken && gapi && gapi.client) {
+    // console.log(`CalendarService -> fetchEvents -> accessToken`, accessToken)
+    // console.log(`CalendarService -> fetchEvents -> this.calendarApi`, this.calendarApi)
+    if (accessToken && this.calendarApi) {
       gapi.client.setToken({
         access_token: accessToken,
       });
-      const calendar = (gapi.client as any).calendar;
-      console.log(`CalendarService -> fetchEvents -> gapi.client.calendar`, calendar)
-      if (calendar) {
-        const eventStartTime = formatISO(startOfToday())
-        const eventEndTime = formatISO(addWeeks(startOfToday(), 2))
-        const request = calendar.events.list({
-          calendarId: 'primary',
-          singleEvents: true,
-          timeMin: eventStartTime,
-          timeMax: eventEndTime,
-          orderBy: 'startTime',
-        });
-        request.execute(response => {
-          if (!response.error) {
-            console.log(`CalendarService -> fetchEvents -> response.items`, response.items)
-            const events = R.map((item: any) => ({
-              id: item.id,
-              summary: item.summary,
-              start: item.start.date || item.start.dateTime,
-              end: item.end.date || item.end.dateTime,
-            }), R.defaultTo([], response.items))
-            console.log(`CalendarService -> fetchEvents -> events`, events)
-            const mappedEvents = mapEvents(events)
-            console.log(`CalendarService -> fetchEvents -> mappedEvents`, mappedEvents)
-            this.ngZone.run(() => {
-              this.events$.next(mappedEvents)
-            });
-          }
-          else {
-            console.log(`CalendarService -> fetchEvents -> error -> response`, response);
-          }
-        });
-      }
+      const eventStartTime = formatISO(startOfToday())
+      const eventEndTime = formatISO(addWeeks(startOfToday(), 2))
+      const request = this.calendarApi.events.list({
+        calendarId: 'primary',
+        singleEvents: true,
+        timeMin: eventStartTime,
+        timeMax: eventEndTime,
+        orderBy: 'startTime',
+      });
+      request.execute(response => {
+        if (!response.error) {
+          const events = R.map((item: any) => ({
+            id: item.id,
+            summary: item.summary,
+            start: item.start.date || item.start.dateTime,
+            end: item.end.date || item.end.dateTime,
+          }), R.defaultTo([], response.items))
+          const mappedEvents = mapEvents(events)
+          this.ngZone.run(() => {
+            this.events$.next(mappedEvents)
+          });
+        }
+        else {
+          console.error(`CalendarService -> fetchEvents -> error -> response`, response);
+        }
+      });
     }
     else {
       this.ngZone.run(() => {

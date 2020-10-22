@@ -1,14 +1,17 @@
 import { Injectable, NgZone, OnDestroy } from '@angular/core';
-// import { auth } from 'firebase/app';
-// import { AngularFireAuth } from '@angular/fire/auth';
 import { isPlatform } from '@ionic/angular'
 import { GooglePlus } from '@ionic-native/google-plus/ngx';
-import { GoogleApiService, GoogleAuthService, NgGapiClientConfig } from 'ng-gapi'
+import { GoogleAuthService } from 'ng-gapi'
+import { BehaviorSubject } from 'rxjs'
 import { SubSink } from 'subsink'
 import { environment } from '../../environments/environment';
-import { BehaviorSubject } from 'rxjs'
 
 const WEB_CLIENT_ID = environment.googlePlusConfig.webClientId;
+
+const GOOGLE_PLUS_OPTIONS = {
+  webClientId: WEB_CLIENT_ID,
+  offline: false,
+};
 
 interface UserData {
   ready: boolean;
@@ -49,149 +52,110 @@ export class AuthenticationService implements OnDestroy {
 
   private googleAuth: gapi.auth2.GoogleAuth = undefined;
   private googleUser: gapi.auth2.GoogleUser = undefined;
-  private googleAuthResponse: gapi.auth2.AuthResponse = undefined;
   private subs = new SubSink()
 
   constructor(
     private ngZone: NgZone,
     private googlePlus: GooglePlus,
-    private gapiService: GoogleApiService,
     private googleAuthService: GoogleAuthService,
   )
   {
-    this.subs.add(this.gapiService.onLoad().subscribe(() => {
-      gapi.load('client', async () => {
-        await gapi.client.load('calendar', 'v3');
-        if (!this.isAndroid()) {
-          this.subs.add(this.googleAuthService.getAuth().subscribe(auth => {
-            this.googleAuth = auth;
-            const user = auth.currentUser.get();
-            console.log(`AuthenticationService -> user.isSignedIn()`, user.isSignedIn())
-            if (user.isSignedIn()) {
-              this.googleUser = user;
-              console.log(`AuthenticationService -> this.googleUser =`, this.googleUser);
-              this.googleAuthResponse = this.googleUser.getAuthResponse();
-              console.log(`AuthenticationService -> this.googleAuthResponse =`, this.googleAuthResponse);
-              this.updateUserDataByGoogleAuth(this.googleUser, this.googleAuthResponse);
-            }
-            else {
-              this.ngZone.run(() => {
-                this.user$.next(NOT_SIGNED_IN_USER_DATA);
-              });
-            }
-          }));
+    if (this.isAndroid()) {
+      this.googlePlus.trySilentLogin(GOOGLE_PLUS_OPTIONS)
+        .then((result: any) => {
+          this.updateUserDataByGooglePlus(result)
+        })
+        .catch((ex: any) => {
+          console.error(`AuthenticationService -> googlePlus.trySilentLogin -> ex`, ex)
+          this.emit(NOT_SIGNED_IN_USER_DATA);
+        });
+    }
+    else {
+      this.subs.add(this.googleAuthService.getAuth().subscribe(auth => {
+        this.googleAuth = auth;
+        const user = auth.currentUser.get();
+        if (user.isSignedIn()) {
+          this.googleUser = user;
+          this.updateUserDataByGoogleAuth(this.googleUser, this.googleUser.getAuthResponse());
         }
-      });
-    }));
+        else {
+          this.emit(NOT_SIGNED_IN_USER_DATA);
+        }
+      }));
+    }
   }
 
   ngOnDestroy(): void {
     this.subs.unsubscribe();
   }
 
-  isAndroid(): boolean {
-    return isPlatform('capacitor');
-  }
-
   // Sign in with Google
   async signIn() {
-    try {
-      console.log(`AuthenticationService -> signIn -> isAndroid =`, this.isAndroid())
-      if (this.isAndroid()) {
-        const options = {
-          webClientId: WEB_CLIENT_ID,
-          offline: true,
-        };
-
-        let result: any;
-        try {
-          console.log(`AuthenticationService -> signIn -> googlePlus.trySilentLogin -> calling`)
-          result = await this.googlePlus.trySilentLogin(options)
-          console.log(`AuthenticationService -> signIn -> googlePlus.trySilentLogin -> result`, result)
-        }
-        catch (ex) {
-          console.error(`AuthenticationService -> signIn -> googlePlus.trySilentLogin -> ex`, ex)
-        }
-        try {
-          if (!result) {
-            console.log(`AuthenticationService -> signIn -> googlePlus.login -> calling`)
-            result = await this.googlePlus.login(options)
-            console.log(`AuthenticationService -> signIn -> googlePlus.login -> result`, result)
-          }
-        }
-        catch (ex) {
-          console.error(`AuthenticationService -> signIn -> googlePlus.login -> ex`, ex)
-        }
-        if (result) {
-          this.updateUserDataByGooglePlus(result);
+    if (this.isAndroid()) {
+      let result: any;
+      try {
+        result = await this.googlePlus.trySilentLogin(GOOGLE_PLUS_OPTIONS)
+      }
+      catch (ex) {
+        console.error(`AuthenticationService -> signIn -> googlePlus.trySilentLogin -> ex`, ex)
+      }
+      try {
+        if (!result) {
+          result = await this.googlePlus.login(GOOGLE_PLUS_OPTIONS)
         }
       }
-      else if (this.googleAuth) {
-        try {
-          console.log(`AuthenticationService -> googleAuth.signIn -> calling`);
-          this.googleUser = await this.googleAuth.signIn();
-          this.googleAuthResponse = this.googleUser.getAuthResponse();
-          console.log(`AuthenticationService -> googleAuth.signIn -> this.googleUser =`, this.googleUser);
-          console.log(`AuthenticationService -> googleAuth.signIn -> this.googleAuthResponse =`, this.googleAuthResponse);
-          this.updateUserDataByGoogleAuth(this.googleUser, this.googleAuthResponse);
-        }
-        catch (ex) {
-          console.error(`AuthenticationService -> googleAuth.signIn -> ex =`, ex)
-        }
+      catch (ex) {
+        console.error(`AuthenticationService -> signIn -> googlePlus.login -> ex`, ex)
+      }
+      if (result) {
+        this.updateUserDataByGooglePlus(result);
       }
     }
-    catch (ex) {
-      console.error(`AuthenticationService -> signIn -> ex`, ex)
+    else if (this.googleAuth) {
+      try {
+        this.googleUser = await this.googleAuth.signIn();
+        this.updateUserDataByGoogleAuth(this.googleUser, this.googleUser.getAuthResponse());
+      }
+      catch (ex) {
+        console.error(`AuthenticationService -> googleAuth.signIn -> ex =`, ex)
+      }
     }
   }
 
   // Sign-out
   async signOut() {
-    try {
-      this.user$.next(NOT_SIGNED_IN_USER_DATA);
-      localStorage.removeItem('user')
-      // console.log(`AuthenticationService -> angularFireAuth.signOut -> calling`)
-      if (this.isAndroid()) {
-        try {
-          console.log(`AuthenticationService -> googlePlus.logout -> calling`)
-          await this.googlePlus.logout();
-          console.log(`AuthenticationService -> googlePlus.logout -> called`)
-        }
-        catch (ex) {
-          console.log(`AuthenticationService -> googlePlus.logout -> ex`, ex)
-        }
+    this.emit(NOT_SIGNED_IN_USER_DATA);
+    localStorage.removeItem('user')
+    if (this.isAndroid()) {
+      try {
+        await this.googlePlus.logout();
       }
-      else if (this.googleAuth) {
-        try {
-          console.log(`AuthenticationService -> googleAuth.signOut -> calling`)
-          await this.googleAuth.signOut()
-          console.log(`AuthenticationService -> googleAuth.signOut -> called`)
-        }
-        catch (ex) {
-          console.log(`AuthenticationService -> googleAuth.signOut -> ex`, ex)
-        }
+      catch (ex) {
+        console.error(`AuthenticationService -> googlePlus.logout -> ex`, ex)
       }
     }
-    catch (ex) {
-      console.log(`AuthenticationService -> signOut -> ex`, ex)
-    }
-  }
-
-  async refreshToken() {
-    try {
-      if (this.googleAuth && this.googleUser) {
-        const authResponse = await this.googleUser.reloadAuthResponse();
-        console.log(`AuthenticationService -> refreshToken -> this.googleUser.reloadAuthResponse`, authResponse);
-        this.updateUserDataByRefreshToken(authResponse);
+    else if (this.googleAuth) {
+      try {
+        await this.googleAuth.signOut()
       }
-    }
-    catch (ex) {
-      console.log(`AuthenticationService -> refreshToken -> ex`, ex)
+      catch (ex) {
+        console.error(`AuthenticationService -> googleAuth.signOut -> ex`, ex)
+      }
     }
   }
 
   getAccessToken() {
     return this.user$.getValue()?.accessToken;
+  }
+
+  emit(userData: UserData) {
+    this.ngZone.run(() => {
+      this.user$.next(userData);
+    });
+  }
+
+  isAndroid(): boolean {
+    return isPlatform('capacitor');
   }
 
   updateUserDataByGooglePlus(result: any) {
@@ -204,9 +168,7 @@ export class AuthenticationService implements OnDestroy {
       accessToken: result.accessToken,
       expiresAt: result.expires,
     };
-    this.ngZone.run(() => {
-      this.user$.next(userData);
-    });
+    this.emit(userData);
   }
 
   updateUserDataByGoogleAuth(user: gapi.auth2.GoogleUser, authResponse: gapi.auth2.AuthResponse) {
@@ -219,9 +181,19 @@ export class AuthenticationService implements OnDestroy {
       accessToken: authResponse.access_token,
       expiresAt: authResponse.expires_at,
     }
-    this.ngZone.run(() => {
-      this.user$.next(userData);
-    });
+    this.emit(userData);
+  }
+
+  async refreshToken() {
+    try {
+      if (this.googleAuth && this.googleUser) {
+        const authResponse = await this.googleUser.reloadAuthResponse();
+        this.updateUserDataByRefreshToken(authResponse);
+      }
+    }
+    catch (ex) {
+      console.log(`AuthenticationService -> refreshToken -> ex`, ex)
+    }
   }
 
   updateUserDataByRefreshToken(authResponse: gapi.auth2.AuthResponse) {
@@ -231,8 +203,6 @@ export class AuthenticationService implements OnDestroy {
       accessToken: authResponse.access_token,
       expiresAt: authResponse.expires_at,
     };
-    this.ngZone.run(() => {
-      this.user$.next(userData);
-    });
+    this.emit(userData);
   }
 }
