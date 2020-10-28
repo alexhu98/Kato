@@ -6,6 +6,7 @@ import { BehaviorSubject } from 'rxjs'
 import { SubSink } from 'subsink'
 import { environment } from '../../environments/environment';
 
+const EXPIRY_TOLERANCE = 60 * 1000
 const WEB_CLIENT_ID = environment.googlePlusConfig.webClientId;
 
 const GOOGLE_PLUS_OPTIONS = {
@@ -144,8 +145,17 @@ export class AuthenticationService implements OnDestroy {
     }
   }
 
-  getAccessToken() {
+  async getAccessToken() {
+    const userData = this.user$.getValue()
+    if (userData.signedIn && this.accessTokenExpired(userData.expiresAt)) {
+      await this.refreshToken()
+    }
     return this.user$.getValue()?.accessToken;
+  }
+
+  accessTokenExpired(expiredAt: number): boolean {
+    const now = (new Date()).getTime()
+    return now + EXPIRY_TOLERANCE >= expiredAt
   }
 
   emit(userData: UserData) {
@@ -166,7 +176,7 @@ export class AuthenticationService implements OnDestroy {
       profileImage: result.imageUrl,
       idToken: result.idToken,
       accessToken: result.accessToken,
-      expiresAt: result.expires,
+      expiresAt: result.expires * 1000,
     };
     this.emit(userData);
   }
@@ -186,13 +196,19 @@ export class AuthenticationService implements OnDestroy {
 
   async refreshToken() {
     try {
-      if (this.googleAuth && this.googleUser) {
-        const authResponse = await this.googleUser.reloadAuthResponse();
-        this.updateUserDataByRefreshToken(authResponse);
+      if (this.isAndroid()) {
+        const result = await this.googlePlus.trySilentLogin(GOOGLE_PLUS_OPTIONS)
+        this.updateUserDataByGooglePlus(result)
+      }
+      else {
+        if (this.googleAuth && this.googleUser) {
+          const authResponse = await this.googleUser.reloadAuthResponse();
+          this.updateUserDataByRefreshToken(authResponse);
+        }
       }
     }
     catch (ex) {
-      console.log(`AuthenticationService -> refreshToken -> ex`, ex)
+      console.error(`AuthenticationService -> refreshToken -> ex`, ex)
     }
   }
 
@@ -203,6 +219,5 @@ export class AuthenticationService implements OnDestroy {
       accessToken: authResponse.access_token,
       expiresAt: authResponse.expires_at,
     };
-    this.emit(userData);
   }
 }
