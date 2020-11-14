@@ -1,4 +1,4 @@
-import { Component, NgZone, OnDestroy } from '@angular/core';
+import { Component, NgZone } from '@angular/core';
 import { Router } from '@angular/router'
 import { CalendarService } from '../services/calendar.service'
 import { GestureController, ViewDidEnter, ViewWillLeave } from '@ionic/angular'
@@ -21,7 +21,7 @@ export class Tab2Page extends SwipeTabPage implements ViewDidEnter, ViewWillLeav
     protected calendarService: CalendarService,
     protected deviceService: DeviceService,
   ) {
-    super(router, zone, gestureController, '/tabs/tab1', '/tabs/tab1');
+    super(router, zone, gestureController, '/tabs/tab3', '/tabs/tab1');
   }
 
   refresh(event) {

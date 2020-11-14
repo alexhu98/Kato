@@ -1,8 +1,11 @@
 import { Injectable, NgZone, OnDestroy } from '@angular/core';
 import { isPlatform } from '@ionic/angular'
 import { GooglePlus } from '@ionic-native/google-plus/ngx';
+import { AngularFireAuth } from '@angular/fire/auth'
+import { AngularFirestore } from '@angular/fire/firestore'
+import * as firebase from 'firebase'
 import { GoogleAuthService } from 'ng-gapi'
-import { BehaviorSubject } from 'rxjs'
+import { BehaviorSubject, of } from 'rxjs'
 import { SubSink } from 'subsink'
 import { environment } from '../../environments/environment';
 
@@ -17,6 +20,7 @@ const GOOGLE_PLUS_OPTIONS = {
 interface UserData {
   ready: boolean;
   signedIn: boolean;
+  userId: string,
   name: string;
   profileImage: string;
   idToken: string;
@@ -27,6 +31,7 @@ interface UserData {
 const NOT_READY_USER_DATA: UserData = {
   ready: false,
   signedIn: false,
+  userId: '',
   name: '',
   profileImage: '',
   idToken: '',
@@ -37,6 +42,7 @@ const NOT_READY_USER_DATA: UserData = {
 const NOT_SIGNED_IN_USER_DATA: UserData = {
   ready: true,
   signedIn: false,
+  userId: '',
   name: '',
   profileImage: '',
   idToken: '',
@@ -59,6 +65,8 @@ export class AuthenticationService implements OnDestroy {
     private ngZone: NgZone,
     private googlePlus: GooglePlus,
     private googleAuthService: GoogleAuthService,
+    private fireAuth: AngularFireAuth,
+    private fireStore: AngularFirestore,
   )
   {
     if (this.isAndroid()) {
@@ -77,7 +85,8 @@ export class AuthenticationService implements OnDestroy {
         const user = auth.currentUser.get();
         if (user.isSignedIn()) {
           this.googleUser = user;
-          this.updateUserDataByGoogleAuth(this.googleUser, this.googleUser.getAuthResponse());
+          const authResponse = this.googleUser.getAuthResponse()
+          this.updateUserDataByGoogleAuth(this.googleUser, authResponse);
         }
         else {
           this.emit(NOT_SIGNED_IN_USER_DATA);
@@ -169,9 +178,16 @@ export class AuthenticationService implements OnDestroy {
   }
 
   updateUserDataByGooglePlus(result: any) {
+    const oldUserData = this.user$.getValue();
+    let userId = '';
+    if (oldUserData.idToken === result.idToken) {
+      console.log(`AuthenticationService -> updateUserDataByGooglePlus -> oldUserData`, oldUserData)
+      userId = oldUserData.userId;
+    }
     const userData = {
       ready: true,
       signedIn: true,
+      userId,
       name: result.displayName,
       profileImage: result.imageUrl,
       idToken: result.idToken,
@@ -179,12 +195,22 @@ export class AuthenticationService implements OnDestroy {
       expiresAt: result.expires * 1000,
     };
     this.emit(userData);
+    if (!userId) {
+      this.updateUserDataWithFireAuth(userData);
+    }
   }
 
   updateUserDataByGoogleAuth(user: gapi.auth2.GoogleUser, authResponse: gapi.auth2.AuthResponse) {
+    const oldUserData = this.user$.getValue();
+    let userId = '';
+    if (oldUserData.idToken === authResponse.id_token) {
+      console.log(`AuthenticationService -> updateUserDataByGoogleAuth -> oldUserData`, oldUserData)
+      userId = oldUserData.userId;
+    }
     const userData = {
       ready: true,
       signedIn: true,
+      userId,
       name: user.getBasicProfile().getName(),
       profileImage: user.getBasicProfile().getImageUrl(),
       idToken: authResponse.id_token,
@@ -192,6 +218,17 @@ export class AuthenticationService implements OnDestroy {
       expiresAt: authResponse.expires_at,
     }
     this.emit(userData);
+    if (!userId) {
+      this.updateUserDataWithFireAuth(userData);
+    }
+  }
+
+  updateUserDataWithFireAuth(userData: UserData) {
+    this.fireAuth.signInWithCredential(firebase.auth.GoogleAuthProvider.credential(userData.idToken, userData.accessToken))
+      .then(credential => {
+        userData.userId = credential.user.uid;
+        this.emit(userData);
+      })
   }
 
   async refreshToken() {

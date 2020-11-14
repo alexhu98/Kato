@@ -27,7 +27,7 @@ export class Tab1Page extends SwipeTabPage implements OnDestroy {
     private calendarService: CalendarService,
     private weatherService: WeatherService,
   ) {
-    super(router, zone, gestureController, '/tabs/tab2', '/tabs/tab2');
+    super(router, zone, gestureController, '/tabs/tab2', '/tabs/tab3');
   }
 
   ngOnDestroy(): void {

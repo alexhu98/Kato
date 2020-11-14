@@ -87,7 +87,7 @@ export class CalendarService implements OnDestroy {
     private authenticationService: AuthenticationService,
   ) {
     this.subs.add(this.refreshTimer$.subscribe(this.refresh$));
-    this.subs.add(this.refresh$.subscribe(async () => await this.fetchEvents()));
+    this.subs.add(this.refresh$.subscribe(async () => await this.queryAll()));
     this.subs.add(this.authenticationService.user$.subscribe(() => this.refresh()));
     this.subs.add(this.gapiService.onLoad().subscribe(() => this.loadGapiClient()));
   }
@@ -110,7 +110,7 @@ export class CalendarService implements OnDestroy {
     this.refresh$.next(null);
   }
 
-  async fetchEvents() {
+  async queryAll() {
     const accessToken = await this.authenticationService.getAccessToken();
     // console.log(`CalendarService -> fetchEvents -> accessToken`, accessToken)
     // console.log(`CalendarService -> fetchEvents -> this.calendarApi`, this.calendarApi)

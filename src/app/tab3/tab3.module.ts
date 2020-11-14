@@ -4,6 +4,8 @@ import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Tab3Page } from './tab3.page';
+import { CalendarModule } from '../calendar/calendar.module';
+import { NoteModule } from '../note/note.module';
 
 import { Tab3PageRoutingModule } from './tab3-routing.module'
 
@@ -14,6 +16,8 @@ import { Tab3PageRoutingModule } from './tab3-routing.module'
     FormsModule,
     RouterModule.forChild([{ path: '', component: Tab3Page }]),
     Tab3PageRoutingModule,
+    CalendarModule,
+    NoteModule,
   ],
   declarations: [Tab3Page]
 })
