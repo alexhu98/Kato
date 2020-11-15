@@ -8,6 +8,7 @@ import { SplashScreen } from '@ionic-native/splash-screen/ngx';
 import { StatusBar } from '@ionic-native/status-bar/ngx';
 
 import { GooglePlus } from '@ionic-native/google-plus/ngx';
+import { TextToSpeech } from '@ionic-native/text-to-speech/ngx';
 import { AngularFireModule } from '@angular/fire';
 import { AngularFireAuthModule } from '@angular/fire/auth';
 import { AngularFirestoreModule } from '@angular/fire/firestore';
@@ -50,6 +51,7 @@ const gapiClientConfig: NgGapiClientConfig = {
     StatusBar,
     SplashScreen,
     GooglePlus,
+    TextToSpeech,
     { provide: RouteReuseStrategy, useClass: IonicRouteStrategy },
   ],
   bootstrap: [AppComponent]

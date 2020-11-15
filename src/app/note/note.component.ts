@@ -17,6 +17,10 @@ export class NoteComponent {
     private noteService: NoteService,
   ) {}
 
+  firstLine(content: string): string {
+    return content.trim().split('\n')[0];
+  }
+
   async editNote(id: string, content: string): Promise<void> {
     const note = { id, content };
     const modal = await this.modalController.create({

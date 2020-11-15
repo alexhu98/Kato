@@ -2,7 +2,6 @@ import { Injectable, NgZone, OnDestroy } from '@angular/core';
 import { isPlatform } from '@ionic/angular'
 import { GooglePlus } from '@ionic-native/google-plus/ngx';
 import { AngularFireAuth } from '@angular/fire/auth'
-import { AngularFirestore } from '@angular/fire/firestore'
 import * as firebase from 'firebase'
 import { GoogleAuthService } from 'ng-gapi'
 import { BehaviorSubject, of } from 'rxjs'
@@ -66,7 +65,6 @@ export class AuthenticationService implements OnDestroy {
     private googlePlus: GooglePlus,
     private googleAuthService: GoogleAuthService,
     private fireAuth: AngularFireAuth,
-    private fireStore: AngularFirestore,
   )
   {
     if (this.isAndroid()) {
