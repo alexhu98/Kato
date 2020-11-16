@@ -1,12 +1,8 @@
 <ion-card>
-  <ion-card-header>
-    <ion-card-subtitle>Notes</ion-card-subtitle>
-  </ion-card-header>
-
   <ion-list>
     <ion-item *ngFor="let note of (notes$ | async)">
-      <h5 (click)="editNote(note.id, note.content)">{{ firstLine(note.content) }}</h5>
-      <ion-button color="light" slot="end" (click)="deleteNote(note.id)">
+      <h5 (click)="edit(note.id, note.content)">{{ firstLine(note.content) }}</h5>
+      <ion-button color="light" slot="end" (click)="remove(note.id)">
         <ion-icon name="trash"></ion-icon>
       </ion-button>
     </ion-item>

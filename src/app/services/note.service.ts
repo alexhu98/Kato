@@ -1,4 +1,3 @@
-import * as R from 'ramda';
 import { Injectable, NgZone, OnDestroy, Query } from '@angular/core';
 import { AngularFirestore } from '@angular/fire/firestore'
 import * as firebase from 'firebase'
@@ -77,7 +76,7 @@ export class NoteService implements OnDestroy {
     this.refresh();
   }
 
-  async delete(id: string): Promise<void> {
+  async remove(id: string): Promise<void> {
     await this.db.collection('notes').doc(id).delete();
     this.refresh();
   }

@@ -21,7 +21,7 @@ export class NoteComponent {
     return content.trim().split('\n')[0];
   }
 
-  async editNote(id: string, content: string): Promise<void> {
+  async edit(id: string, content: string): Promise<void> {
     const note = { id, content };
     const modal = await this.modalController.create({
       component: NoteModalPage,
@@ -30,7 +30,7 @@ export class NoteComponent {
     modal.present();
   }
 
-  async deleteNote(id: string): Promise<void> {
-    await this.noteService.delete(id);
+  async remove(id: string): Promise<void> {
+    await this.noteService.remove(id);
   }
 }

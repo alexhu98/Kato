@@ -1,4 +1,4 @@
-import { Component, Input } from '@angular/core';
+import { Component, Input, OnDestroy } from '@angular/core';
 import { TextToSpeech } from '@ionic-native/text-to-speech/ngx';
 import { isPlatform, ModalController } from '@ionic/angular';
 import { NoteService } from '../services/note.service';
@@ -8,7 +8,7 @@ import { NoteService } from '../services/note.service';
   templateUrl: './note-modal.page.html',
   styleUrls: ['./note-modal.page.scss'],
 })
-export class NoteModalPage {
+export class NoteModalPage implements OnDestroy {
   @Input() id: string;
   @Input() content: string;
 
@@ -18,26 +18,26 @@ export class NoteModalPage {
     private tts: TextToSpeech,
   ) { }
 
-  async cancel(): Promise<void> {
+  ngOnDestroy() {
     if (this.isAndroid()) {
-      await this.tts.speak('');
+      this.tts.speak('');
     }
-    this.modalController.dismiss({ dismissed: true });
+  }
+
+  async cancel(): Promise<void> {
+    this.modalController.dismiss();
   }
 
   async save(): Promise<void> {
-    if (this.content) {
+    if (this.id || this.content) { // don't save a new empty note
       await this.noteService.update(this.id, this.content)
     }
-    if (this.isAndroid()) {
-      await this.tts.speak('');
-    }
-    this.modalController.dismiss({ dismissed: true });
+    this.modalController.dismiss();
   }
 
   speak(): void {
     if (this.isAndroid()) {
-      this.tts.speak(this.content);
+      this.tts.speak(this.content).then();
     }
   }
 
