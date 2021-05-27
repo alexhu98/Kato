@@ -15,7 +15,7 @@ const TPLINK_PASSWORD = environment.tplinkConfig.password;
 const ONE_SECOND = 1000;
 const ONE_MINUTE = 60 * ONE_SECOND;
 
-const FILTER_DEVICE_NAMES = ['Fan', 'Light'];
+const FILTER_DEVICE_NAMES = ['Fan', 'Office'];
 
 const getIconName = (name): string => {
   let iconName = 'bulb-outline';
