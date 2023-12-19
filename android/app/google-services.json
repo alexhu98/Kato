@@ -15,28 +15,28 @@
       },
       "oauth_client": [
         {
-          "client_id": "872194152518-b5p0sr8sui6rickgtqhab0m3u3a4pfgu.apps.googleusercontent.com",
+          "client_id": "OAUTH_CLIENT_ID",
           "client_type": 1,
           "android_info": {
             "package_name": "com.prettygoodcomputing.kato",
-            "certificate_hash": "64a1c8a6211236d2d50dade3ef6bd8f182e4a57f"
+            "certificate_hash": "OAUTH_CERT_HASH"
           }
         },
         {
-          "client_id": "872194152518-3uo269q5lraicu050a8rkc38h870mdac.apps.googleusercontent.com",
+          "client_id": "OAUTH_CLIENT_ID",
           "client_type": 3
         }
       ],
       "api_key": [
         {
-          "current_key": "API_KEY22222222222222222222222222222222222"
+          "current_key": "API_KEY"
         }
       ],
       "services": {
         "appinvite_service": {
           "other_platform_oauth_client": [
             {
-              "client_id": "872194152518-3uo269q5lraicu050a8rkc38h870mdac.apps.googleusercontent.com",
+              "client_id": "OAUTH_CLIENT_ID",
               "client_type": 3
             }
           ]

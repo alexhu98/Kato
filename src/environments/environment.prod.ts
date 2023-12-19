@@ -1,7 +1,7 @@
 export const environment = {
   production: true,
   firebaseConfig: {
-    apiKey: 'AIzaSyCTjB-zuoFEGAYwwG7B5_W6MuA_sAec4Ws',
+    apiKey: 'FIREBASE_API_KEY',
     authDomain: 'kato-291418.firebaseapp.com',
     databaseURL: 'https://kato-291418.firebaseio.com',
     projectId: 'kato-291418',
@@ -14,6 +14,6 @@ export const environment = {
     password: 'stardust',
   },
   googlePlusConfig: {
-    webClientId: '872194152518-3uo269q5lraicu050a8rkc38h870mdac.apps.googleusercontent.com',
+    webClientId: 'WEB_CLIENT_ID',
   }
 };

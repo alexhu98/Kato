@@ -8,7 +8,7 @@ import { SubSink } from 'subsink'
 
 const LAT = '34.28';
 const LON = '-118.88';
-const APP_ID = 'e6b1a8915b1d79330d9c272f1b2394eb';
+const APP_ID = 'OPEN_WEATHER_APP_ID';
 const OPEN_WEATHER_URL = `http://api.openweathermap.org/data/2.5/onecall?lat=${LAT}&lon=${LON}&exclude=minutely,hourly&units=imperial&appid=${APP_ID}`;
 const MAX_DAYS = 3;
 const ONE_HOUR = 60 * 60 * 1000;
